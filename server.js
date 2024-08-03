@@ -16,7 +16,7 @@ app.post('/ask', async (req, res) => {
             model: 'gpt-4',
             messages: [{ role: 'user', content: question }],
         }, {
-            headers: { 'Authorization': `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` }
+            headers: { 'Authorization': `xip` }
         });
 
         res.json({ answer: response.data.choices[0].message.content });
