@@ -1,78 +1,56 @@
 body {
     font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #f4f4f4;
     margin: 0;
 }
 
 .container {
-    background: white;
-    padding: 20px;
+    background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 400px;
     text-align: center;
-    width: 300px;
 }
 
 h1 {
-    margin-bottom: 20px;
+    color: #333;
 }
 
-form {
-    margin-bottom: 20px;
+.chatbox {
+    margin-top: 20px;
 }
 
-label, input {
-    display: block;
+#chat-output {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 10px;
     margin-bottom: 10px;
+    background-color: #f9f9f9;
+}
+
+#question {
+    width: calc(100% - 60px);
+    padding: 10px;
+    margin-right: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
 }
 
 button {
-    background: #28a745;
-    color: white;
+    padding: 10px 15px;
     border: none;
-    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
     border-radius: 4px;
     cursor: pointer;
 }
 
 button:hover {
-    background: #218838;
-}
-
-#participantsList {
-    list-style-type: none;
-    padding: 0;
-    margin-bottom: 20px;
-    max-height: 150px;
-    overflow-y: auto;
-}
-
-#participantsList li {
-    background: #eee;
-    padding: 10px;
-    border: 1px solid #ddd;
-    margin-bottom: 5px;
-    border-radius: 4px;
-    animation: fadeIn 0.5s;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-#countdown {
-    font-size: 2rem;
-    margin-top: 20px;
-}
-
-#winner {
-    font-weight: bold;
-    margin-top: 20px;
-    display: none;
-    animation: fadeIn 1s;
+    background-color: #0056b3;
 }
