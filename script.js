@@ -1,35 +1,27 @@
-async function askQuestion() {
-    const questionInput = document.getElementById('question');
-    const question = questionInput.value.trim();
-    const chatOutput = document.getElementById('chat-output');
+const carrosseis = document.querySelectorAll('.carrossel');
 
-    if (question === "") {
-        alert("Por favor, digite uma pergunta.");
-        return;
-    }
+carrosseis.forEach((carrossel) => {
+  const slides = carrossel.querySelector('.slides');
+  const prevBtn = carrossel.querySelector('.prev');
+  const nextBtn = carrossel.querySelector('.next');
+  const imagens = slides.querySelectorAll('img');
+  let currentIndex = 0;
 
-    // Adiciona a pergunta no chat
-    const userMessage = document.createElement('p');
-    userMessage.textContent = `Você: ${question}`;
-    chatOutput.appendChild(userMessage);
+  function updateCarrossel() {
+    const slideWidth = imagens[0].clientWidth; // Largura de uma imagem
+    slides.style.transform = `translateX(-${currentIndex * slideWidth}px)`;
+  }
 
-    // Limpa o campo de entrada
-    questionInput.value = "";
+  prevBtn.addEventListener('click', () => {
+    currentIndex = (currentIndex - 1 + imagens.length) % imagens.length;
+    updateCarrossel();
+  });
 
-    // Envia a pergunta ao backend
-    const response = await fetch('/ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: question })
-    });
+  nextBtn.addEventListener('click', () => {
+    currentIndex = (currentIndex + 1) % imagens.length;
+    updateCarrossel();
+  });
 
-    const data = await response.json();
-
-    // Adiciona a resposta no chat
-    const aiMessage = document.createElement('p');
-    aiMessage.textContent = `IA: ${data.answer}`;
-    chatOutput.appendChild(aiMessage);
-
-    // Faz scroll para a nova mensagem
-    chatOutput.scrollTop = chatOutput.scrollHeight;
-}
+  // Atualiza o tamanho do carrossel ao redimensionar a janela
+  window.addEventListener('resize', updateCarrossel);
+});
