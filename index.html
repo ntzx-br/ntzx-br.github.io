@@ -7,50 +7,12 @@
   <link rel="stylesheet" href="styles.css">
   <script src="script.js" defer></script>
   <style>
-    /* Estilo global */
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f8f8f8;
-      margin: 0;
-      padding: 0;
-    }
-
-    /* Centralização */
-    .container {
-      max-width: 1000px;
-      margin: 20px auto;
-      padding: 20px;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Ajuste da tabela */
     #tabela-container {
-      width: 100%;
-      overflow-x: auto;
-      background-color: #f0f0f0;
-      padding: 20px;
-      border-radius: 13px;
       box-shadow: 0px 0px 10px rgba(0, 0, 255, 0.5);
+      padding: 20px;
+      background-color: #f0f0f0;
+      border-radius: 13px;
     }
-
-    /* Botões estilizados */
-    button {
-      background-color: blue;
-      color: white;
-      border: none;
-      padding: 10px;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-right: 5px;
-    }
-
-    button:hover {
-      background-color: darkblue;
-    }
-
-    /* Estilo para os dias de folga */
     .folga {
       background-color: rgb(138, 158, 232);
       color: rgb(0, 0, 0);
@@ -58,38 +20,18 @@
       text-align: center;
       cursor: pointer;
     }
-
-    /* Ajustes para impressão */
-    @media print {
-      body {
-        background: white;
-      }
-      .container {
-        box-shadow: none;
-      }
-      button {
-        display: none; /* Esconde os botões na impressão */
-      }
-      #tabela-container {
-        width: 100%;
-        page-break-before: avoid; /* Evita que a tabela seja cortada */
-        page-break-inside: avoid;
-      }
-    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Super i Telecom</h1>
-    <h2>Gerador de Escala de Trabalho</h2>
-    <label for="nome">Nome do gerente:</label>
-    <input type="text" id="nome" required>
-    <label for="mes">Escolha o mês:</label>
-    <input type="month" id="mes">
-    <button onclick="gerarEscala()">Gerar Escala</button>
-    <button onclick="window.print()">Imprimir/Salvar PDF</button>
-    <button onclick="ativarEdicao()">Ativar Edição</button>  
-    <div id="tabela-container"></div>
-  </div>
+  <h1>Super i Telecom</h1>
+  <h2>Gerador de Escala de Trabalho</h2>
+  <label for="nome">Nome do gerente:</label>
+  <input type="text" id="nome" required>
+  <label for="mes">Escolha o mês:</label>
+  <input type="month" id="mes">
+  <button onclick="gerarEscala()">Gerar Escala</button>
+  <button onclick="imprimirEscala()">Imprimir/Salvar PDF</button>
+  <button onclick="ativarEdicao()">Ativar Edição</button>  
+  <div id="tabela-container"></div>
 </body>
 </html>
