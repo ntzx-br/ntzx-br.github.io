@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de Rifas</title>
+<style>
+    body {
+        background-color: #121212;
+        color: #f0f0f0;
+        font-family: Arial, sans-serif;
+        text-align: center;
+    }
+    h1 {
+        margin-top: 20px;
+    }
+    input, button {
+        padding: 10px;
+        margin: 5px;
+        border: none;
+        border-radius: 5px;
+        background-color: #1f1f1f;
+        color: white;
+    }
+    button:hover {
+        background-color: #333;
+        cursor: pointer;
+    }
+    table {
+        border-collapse: collapse;
+        margin: 20px auto;
+    }
+    td {
+        border: 2px solid #00ffcc;
+        padding: 10px;
+        text-align: center;
+        background-color: #1e1e1e;
+        cursor: pointer;
+    }
+    td.selecionado {
+        background-color: #00ffcc;
+        color: black;
+    }
+    .nomeInput {
+        width: 90px;
+        margin-top: 5px;
+        border: 1px solid #00ffcc;
+        background-color: #121212;
+        color: white;
+    }
+    .botoes {
+        margin-top: 20px;
+    }
+</style>
+</head>
+<body>
+
+<h1>Gerador de Rifa (Tema Dark)</h1>
+
+<input type="number" id="quantidade" placeholder="Quantidade de números">
+<button onclick="gerarRifa()">Gerar Rifa</button>
+
+<div id="tabela"></div>
+
+<div class="botoes" id="botoesExtras" style="display: none;">
+    <button onclick="downloadTabela()">Baixar Tabela</button>
+    <a href="sorteio.html">
+        <button>Ir para Sorteio</button>
+    </a>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+let nomes = {};
+let selecionados = [];
+
+function gerarRifa() {
+    const quantidade = parseInt(document.getElementById('quantidade').value);
+    if (!quantidade || quantidade <= 0) {
+        alert('Insira um número válido!');
+        return;
+    }
+
+    let tabelaHTML = `<div id="areaTabela"><h2>Rifa - ${new Date().toLocaleString()}</h2><table>`;
+    for (let i = 1; i <= quantidade; i++) {
+        if ((i-1) % 10 === 0) tabelaHTML += '<tr>';
+        const nomeSalvo = nomes[i] || '';
+        const selecionado = selecionados.includes(i) ? 'selecionado' : '';
+        tabelaHTML += `<td class="${selecionado}" onclick="toggleSelecionado(${i})">
+            ${i}<br>
+            <input class="nomeInput" placeholder="Nome" value="${nomeSalvo}" 
+            oninput="salvarNome(${i}, this.value)">
+        </td>`;
+        if (i % 10 === 0) tabelaHTML += '</tr>';
+    }
+    tabelaHTML += '</table></div>';
+
+    document.getElementById('tabela').innerHTML = tabelaHTML;
+    document.getElementById('botoesExtras').style.display = 'block';
+
+    localStorage.setItem('quantidade', quantidade);
+    salvarDados();
+}
+
+function toggleSelecionado(numero) {
+    if (selecionados.includes(numero)) {
+        selecionados = selecionados.filter(n => n !== numero);
+    } else {
+        selecionados.push(numero);
+    }
+    salvarDados();
+    gerarRifa();
+}
+
+function salvarNome(numero, nome) {
+    if (nome) {
+        nomes[numero] = nome;
+    } else {
+        delete nomes[numero];
+    }
+    salvarDados();
+}
+
+function salvarDados() {
+    localStorage.setItem('nomes', JSON.stringify(nomes));
+    localStorage.setItem('selecionados', JSON.stringify(selecionados));
+}
+
+function carregarDados() {
+    nomes = JSON.parse(localStorage.getItem('nomes')) || {};
+    selecionados = JSON.parse(localStorage.getItem('selecionados')) || [];
+    const qtd = parseInt(localStorage.getItem('quantidade'));
+    if (qtd) {
+        document.getElementById('quantidade').value = qtd;
+        gerarRifa();
+    }
+}
+
+function downloadTabela() {
+    const areaTabela = document.getElementById('areaTabela');
+    html2canvas(areaTabela).then(canvas => {
+        const link = document.createElement('a');
+        const dataHora = new Date().toLocaleString().replace(/[\/:]/g, '-').replace(',','');
+        link.download = `tabela_rifa_${dataHora}.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+    });
+}
+
+window.onload = carregarDados;
+</script>
+
+</body>
+</html>

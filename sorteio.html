@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roleta de Sorteio</title>
+<style>
+    body {
+        background-color: #121212;
+        color: #f0f0f0;
+        font-family: Arial, sans-serif;
+        text-align: center;
+    }
+    h1 {
+        margin-top: 20px;
+    }
+    input, button {
+        padding: 10px;
+        margin: 10px;
+        border: none;
+        border-radius: 5px;
+        background-color: #1f1f1f;
+        color: white;
+    }
+    button:hover {
+        background-color: #333;
+        cursor: pointer;
+    }
+    .roleta {
+        margin: 30px auto;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        border: 8px solid #00ffcc;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 0 20px #00ffcc;
+    }
+    .roleta .seta {
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 15px solid transparent;
+        border-right: 15px solid transparent;
+        border-bottom: 20px solid red;
+    }
+    .roleta .disco {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: conic-gradient(#ff6f61 0% 25%, #6fa8dc 25% 50%, #93c47d 50% 75%, #f9cb9c 75% 100%);
+        transition: transform 5s cubic-bezier(0.33, 1, 0.68, 1);
+    }
+    .resultado {
+        margin-top: 20px;
+        font-size: 28px;
+        color: #00ffcc;
+        text-shadow: 0 0 5px #00ffcc;
+    }
+    .ranking {
+        margin-top: 20px;
+        background-color: #1e1e1e;
+        padding: 15px;
+        border-radius: 10px;
+        display: inline-block;
+        border: 2px solid #00ffcc;
+    }
+    .ranking h3 {
+        margin-top: 0;
+        color: #00ffcc;
+    }
+    .ranking p {
+        margin: 5px;
+    }
+</style>
+</head>
+<body>
+
+<h1>Roleta de Sorteio</h1>
+
+<input type="number" id="quantidade" placeholder="Quantidade de números">
+<button onclick="girar()">Girar Roleta</button>
+<button onclick="baixarRanking()">Baixar Ranking</button>
+<button onclick="resetar()">Resetar Ranking</button>
+
+<div class="resultado" id="resultado">🎯 Aguardando sorteio...</div>
+
+<div class="roleta">
+    <div class="seta"></div>
+    <div class="disco" id="disco"></div>
+</div>
+
+<div class="ranking" id="ranking">
+    <h3>🏆 Ranking</h3>
+    <p>🥇 1º Lugar: -</p>
+    <p>🥈 2º Lugar: -</p>
+    <p>🥉 3º Lugar: -</p>
+</div>
+
+<br>
+<a href="index.html">
+    <button>Voltar para a Rifa</button>
+</a>
+
+<!-- Script do html2canvas para gerar imagens -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<!-- Som da roleta -->
+<audio id="somRoleta" src="https://assets.mixkit.co/sfx/preview/mixkit-fast-small-sweep-transition-166.mp3"></audio>
+
+<script>
+let angulo = 0;
+let ganhadores = [];
+let nomes = {}; // Objeto para armazenar nomes vinculados aos números
+
+// Carregar nomes da localStorage (vindos da página da tabela)
+if (localStorage.getItem('nomes')) {
+    nomes = JSON.parse(localStorage.getItem('nomes'));
+}
+
+function girar() {
+    const quantidade = parseInt(document.getElementById('quantidade').value);
+    if (!quantidade || quantidade <= 0) {
+        alert('Insira um número válido!');
+        return;
+    }
+
+    if (ganhadores.length >= 3) {
+        alert('O ranking já tem 3 ganhadores!');
+        return;
+    }
+
+    const som = document.getElementById('somRoleta');
+    som.play();
+
+    const voltas = Math.floor(Math.random() * 5) + 5;
+    const anguloFinal = Math.floor(Math.random() * 360);
+    angulo += voltas * 360 + anguloFinal;
+
+    document.getElementById('disco').style.transform = `rotate(${angulo}deg)`;
+
+    const setor = 360 / quantidade;
+    const anguloCalculado = (360 - (angulo % 360) + setor / 2) % 360;
+    const numeroSorteado = Math.ceil(anguloCalculado / setor);
+
+    setTimeout(() => {
+        som.pause();
+        som.currentTime = 0;
+
+        const nome = nomes[numeroSorteado] || '';
+        const exibicao = nome ? `${numeroSorteado} - ${nome}` : numeroSorteado;
+
+        if (!ganhadores.includes(exibicao)) {
+            ganhadores.push(exibicao);
+        }
+        atualizarRanking();
+        document.getElementById('resultado').innerHTML = 
+            `🎉 Número sorteado: <strong>${exibicao}</strong>`;
+    }, 5000);
+}
+
+function atualizarRanking() {
+    const ranking = document.getElementById('ranking');
+    ranking.innerHTML = `
+        <h3>🏆 Ranking</h3>
+        <p>🥇 1º Lugar: ${ganhadores[0] || '-'}</p>
+        <p>🥈 2º Lugar: ${ganhadores[1] || '-'}</p>
+        <p>🥉 3º Lugar: ${ganhadores[2] || '-'}</p>
+    `;
+}
+
+function baixarRanking() {
+    html2canvas(document.getElementById('ranking')).then(canvas => {
+        const link = document.createElement('a');
+        const dataHora = new Date().toLocaleString().replace(/[\/:]/g, '-').replace(',','');
+        link.download = `ranking_${dataHora}.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+    });
+}
+
+function resetar() {
+    ganhadores = [];
+    atualizarRanking();
+    document.getElementById('resultado').innerHTML = '🎯 Aguardando sorteio...';
+}
+</script>
+
+</body>
+</html>
