@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lista dos Vendidos</title>
+<style>
+    body {
+        background-color: #121212;
+        color: white;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 0;
+        padding: 10px;
+    }
+    h1 {
+        margin: 20px;
+    }
+    table {
+        border-collapse: collapse;
+        margin: 0 auto;
+        width: 90%;
+        max-width: 600px;
+        background-color: #1e1e1e;
+    }
+    th, td {
+        border: 2px solid #39b0ff5e;
+        padding: 10px;
+        text-align: center;
+        word-break: break-word;
+        user-select: none;
+        cursor: pointer;
+    }
+    th {
+        background-color: #39b0ff5e;
+        color: black;
+        cursor: default;
+    }
+    .botoes {
+        margin-top: 20px;
+    }
+    button {
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        background-color: #1f1f1f;
+        color: white;
+        cursor: pointer;
+        margin: 0 5px;
+    }
+    button:hover {
+        background-color: #333;
+    }
+    #barraProgressoContainer {
+        width: 90%;
+        max-width: 600px;
+        background-color: #333;
+        border-radius: 10px;
+        margin: 20px auto 10px;
+        height: 25px;
+        overflow: hidden;
+        box-shadow: 0 0 10px #f0f0f05e;
+    }
+    #barraProgresso {
+        height: 100%;
+        background-color: #39b0ff5e;
+        width: 0%;
+        transition: width 0.5s ease-in-out;
+    }
+    #textoProgresso {
+        margin: 0 auto 20px;
+        max-width: 600px;
+    }
+    @media (max-width: 600px) {
+        th, td {
+            padding: 6px;
+            font-size: 14px;
+        }
+        button {
+            padding: 8px;
+            font-size: 14px;
+        }
+    }
+</style>
+</head>
+<body>
+
+<h1>Lista dos Vendidos</h1>
+
+<div id="barraProgressoContainer">
+    <div id="barraProgresso"></div>
+</div>
+<p id="textoProgresso"></p>
+
+<div id="lista"></div>
+
+<div class="botoes">
+    <button onclick="baixarListaPNG()">Baixar Lista PNG</button>
+    <button onclick="baixarListaPDF()">Baixar Lista PDF</button>
+    <button onclick="window.location.href='index.html'">Voltar</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+const nomes = JSON.parse(localStorage.getItem('nomes')) || {};
+const selecionados = JSON.parse(localStorage.getItem('selecionados')) || [];
+const pagamentos = JSON.parse(localStorage.getItem('pagamentos')) || {};
+const quantidadeTotal = parseInt(localStorage.getItem('quantidade')) || 0;
+
+function salvarPagamento(numero, novoStatus) {
+    if (novoStatus === "") {
+        delete pagamentos[numero];
+    } else {
+        pagamentos[numero] = novoStatus;
+    }
+    localStorage.setItem('pagamentos', JSON.stringify(pagamentos));
+}
+
+function togglePagamento(numero) {
+    const statusAtual = pagamentos[numero] || "";
+    let novoStatus;
+    switch (statusAtual) {
+        case "":
+            novoStatus = "Pix";
+            break;
+        case "Pix":
+            novoStatus = "Dinheiro";
+            break;
+        case "Dinheiro":
+            novoStatus = "";
+            break;
+        default:
+            novoStatus = "";
+    }
+    salvarPagamento(numero, novoStatus);
+    gerarLista();
+}
+
+function gerarLista() {
+    if (selecionados.length === 0) {
+        document.getElementById('lista').innerHTML = '<p>Nenhum número vendido.</p>';
+        atualizarBarraProgresso();
+        return;
+    }
+
+    let html = `<div id="areaLista"><table>
+        <thead>
+            <tr>
+                <th>Número</th>
+                <th>Nome</th>
+                <th>Pagamento<br><small>(clique para mudar)</small></th>
+            </tr>
+        </thead>
+        <tbody>`;
+
+    selecionados.sort((a, b) => a - b).forEach(num => {
+        const nome = nomes[num] || '---';
+        const pagamento = pagamentos[num] || '';
+        html += `<tr>
+            <td>${num}</td>
+            <td>${nome}</td>
+            <td onclick="togglePagamento(${num})">${pagamento || '<i>Pendente</i>'}</td>
+        </tr>`;
+    });
+
+    html += `</tbody></table></div>`;
+
+    document.getElementById('lista').innerHTML = html;
+
+    atualizarBarraProgresso();
+}
+
+function atualizarBarraProgresso() {
+    const vendidos = selecionados.length;
+    if (quantidadeTotal === 0) {
+        document.getElementById('barraProgressoContainer').style.display = 'none';
+        document.getElementById('textoProgresso').textContent = 'Quantidade total não definida.';
+        return;
+    }
+    document.getElementById('barraProgressoContainer').style.display = 'block';
+
+    const porcentagem = Math.min(100, Math.round((vendidos / quantidadeTotal) * 100));
+    const barra = document.getElementById('barraProgresso');
+    barra.style.width = porcentagem + '%';
+
+    const texto = `${vendidos} vendidos de ${quantidadeTotal} (${porcentagem}%)`;
+    document.getElementById('textoProgresso').textContent = texto;
+}
+
+function baixarListaPNG() {
+    const area = document.getElementById('areaLista');
+    if (!area) {
+        alert('Nenhum dado para baixar.');
+        return;
+    }
+    html2canvas(area, { scale: 3 }).then(canvas => {
+        const link = document.createElement('a');
+        const dataHora = new Date().toLocaleString().replace(/[\/:]/g, '-').replace(',', '');
+        link.download = `lista_vendidos_${dataHora}.png`;
+        link.href = canvas.toDataURL();
+        link.click();
+    });
+}
+
+async function baixarListaPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const area = document.getElementById('areaLista');
+    if (!area) {
+        alert('Nenhum dado para baixar.');
+        return;
+    }
+
+    // Vamos montar uma tabela no PDF para ficar mais legível
+    const vendidosOrdenados = selecionados.slice().sort((a, b) => a - b);
+
+    doc.setFontSize(16);
+    doc.text('Lista dos Vendidos', 105, 15, null, null, 'center');
+    doc.setFontSize(12);
+
+    let y = 30;
+    doc.text('Número', 20, y);
+    doc.text('Nome', 50, y);
+    doc.text('Pagamento', 150, y);
+    y += 8;
+
+    vendidosOrdenados.forEach(num => {
+        const nome = nomes[num] || '---';
+        const pagamento = pagamentos[num] || 'Pendente';
+
+        if (y > 280) {
+            doc.addPage();
+            y = 20;
+        }
+
+        doc.text(num.toString(), 20, y);
+        doc.text(nome, 50, y);
+        doc.text(pagamento, 150, y);
+        y += 8;
+    });
+
+    doc.save(`lista_vendidos_${new Date().toISOString().slice(0,19).replace(/:/g,"-")}.pdf`);
+}
+
+window.onload = gerarLista;
+</script>
+
+</body>
+</html>

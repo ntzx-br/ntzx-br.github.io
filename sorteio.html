@@ -31,10 +31,10 @@
         width: 300px;
         height: 300px;
         border-radius: 50%;
-        border: 8px solid #00ffcc;
+        border: 5px solid #00000000;
         position: relative;
         overflow: hidden;
-        box-shadow: 0 0 20px #00ffcc;
+        box-shadow: 0 0 20px #39b0ff5e;
     }
     .roleta .seta {
         position: absolute;
@@ -51,14 +51,14 @@
         width: 100%;
         height: 100%;
         border-radius: 50%;
-        background: conic-gradient(#ff6f61 0% 25%, #6fa8dc 25% 50%, #93c47d 50% 75%, #f9cb9c 75% 100%);
+        background: conic-gradient(#811a11 0% 25%, #10589b 25% 50%, #317711 50% 75%, #c56a0f 75% 100%);
         transition: transform 5s cubic-bezier(0.33, 1, 0.68, 1);
     }
     .resultado {
         margin-top: 20px;
         font-size: 28px;
-        color: #00ffcc;
-        text-shadow: 0 0 5px #00ffcc;
+        color: #ffd000;
+        text-shadow: 0 0 5px #ffd000;
     }
     .ranking {
         margin-top: 20px;
@@ -66,11 +66,11 @@
         padding: 15px;
         border-radius: 10px;
         display: inline-block;
-        border: 2px solid #00ffcc;
+        border: 2px solid #ffd000;
     }
     .ranking h3 {
         margin-top: 0;
-        color: #00ffcc;
+        color: #ffd000;
     }
     .ranking p {
         margin: 5px;
@@ -82,7 +82,9 @@
 <h1>Roleta de Sorteio</h1>
 
 <input type="number" id="quantidade" placeholder="Quantidade de números">
+<br>
 <button onclick="girar()">Girar Roleta</button>
+<button onclick="girarVendidos()">Sortear Vendidos</button>
 <button onclick="baixarRanking()">Baixar Ranking</button>
 <button onclick="resetar()">Resetar Ranking</button>
 
@@ -105,21 +107,14 @@
     <button>Voltar para a Rifa</button>
 </a>
 
-<!-- Script do html2canvas para gerar imagens -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
-<!-- Som da roleta -->
 <audio id="somRoleta" src="https://assets.mixkit.co/sfx/preview/mixkit-fast-small-sweep-transition-166.mp3"></audio>
 
 <script>
 let angulo = 0;
 let ganhadores = [];
-let nomes = {}; // Objeto para armazenar nomes vinculados aos números
-
-// Carregar nomes da localStorage (vindos da página da tabela)
-if (localStorage.getItem('nomes')) {
-    nomes = JSON.parse(localStorage.getItem('nomes'));
-}
+let nomes = JSON.parse(localStorage.getItem('nomes')) || {};
+let selecionados = JSON.parse(localStorage.getItem('selecionados')) || [];
 
 function girar() {
     const quantidade = parseInt(document.getElementById('quantidade').value);
@@ -128,6 +123,19 @@ function girar() {
         return;
     }
 
+    const numeros = Array.from({length: quantidade}, (_, i) => i + 1);
+    sortear(numeros);
+}
+
+function girarVendidos() {
+    if (selecionados.length === 0) {
+        alert('Nenhum número vendido selecionado!');
+        return;
+    }
+    sortear(selecionados);
+}
+
+function sortear(listaNumeros) {
     if (ganhadores.length >= 3) {
         alert('O ranking já tem 3 ganhadores!');
         return;
@@ -136,6 +144,7 @@ function girar() {
     const som = document.getElementById('somRoleta');
     som.play();
 
+    const quantidade = listaNumeros.length;
     const voltas = Math.floor(Math.random() * 5) + 5;
     const anguloFinal = Math.floor(Math.random() * 360);
     angulo += voltas * 360 + anguloFinal;
@@ -144,7 +153,8 @@ function girar() {
 
     const setor = 360 / quantidade;
     const anguloCalculado = (360 - (angulo % 360) + setor / 2) % 360;
-    const numeroSorteado = Math.ceil(anguloCalculado / setor);
+    const indice = Math.floor(anguloCalculado / setor);
+    const numeroSorteado = listaNumeros[indice];
 
     setTimeout(() => {
         som.pause();
